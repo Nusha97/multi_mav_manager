@@ -114,9 +114,13 @@ tmux split-window -t $SESSION_NAME
 tmux send-keys -t $SESSION_NAME "$SETUP_ROS_STRING; sleep 3; export DISPLAY=${CURRENT_DISPLAY}; rosrun rviz rviz -d ${RVIZ_CONFIG_FILE}" Enter
 tmux split-window -t $SESSION_NAME
 tmux send-keys -t $SESSION_NAME "$SETUP_ROS_STRING; sleep 3; export DISPLAY=${CURRENT_DISPLAY}; rosparam set robot_name $MAV_NAME; rqt --standalone ${RQT_GUI}" Enter
+# tmux split-window -t $SESSION_NAME
+# tmux send-keys -t $SESSION_NAME "$SETUP_ROS_STRING; sleep 3; export DISPLAY=${CURRENT_DISPLAY}; rosbag record -a -O checking.bag" Enter
+# tmux send-keys -t $SESSION_NAME "$SETUP_ROS_STRING; sleep 3; export DISPLAY=${CURRENT_DISPLAY}; rosbag record -a --split --duration=40 -O nn_lissajous.bag" Enter
 tmux split-window -t $SESSION_NAME
 tmux send-keys -t $SESSION_NAME "$SETUP_ROS_STRING; sleep 3; roslaunch kr_multi_mav_manager multi_mav_manager.launch odom_topic:=odom config_path:=$HOME/.ros/" Enter
 tmux select-layout -t $SESSION_NAME tiled
+
 
 # Add window to easily kill all processes
 tmux new-window -t $SESSION_NAME -n "Kill"
@@ -169,8 +173,14 @@ do
   tmux split-window -t $SESSION_NAME
   tmux send-keys -t $SESSION_NAME "$SETUP_ROS_STRING; sleep 4; rosrun kr_trackers twist_to_velocity_goal.py __ns:=${MAV_NAME}" Enter
   tmux split-window -t $SESSION_NAME
+  tmux send-keys -t $SESSION_NAME "$SETUP_ROS_STRING; sleep 4; rosrun layered_ref_control traj_${MAV_NAME}.py /${MAV_NAME}" Enter
+  tmux new-window -t $SESSION_NAME -n "Record${id}"
+  tmux send-keys -t $SESSION_NAME "$SETUP_ROS_STRING; sleep 4; rosrun layered_ref_control sync_msg _sim:=true _namespace:=${MAV_NAME} __name:=${MAV_NAME}" Enter
+  tmux split-window -t $SESSION_NAME
   tmux send-keys -t $SESSION_NAME "$SETUP_ROS_STRING; sleep 4; cd $(rospack find kr_mav_launch)/scripts/; ./takeoff.sh ${MAV_NAME}"
   tmux select-layout -t $SESSION_NAME tiled
+
+
 
   let pos_cnt+=4
 done
